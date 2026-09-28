@@ -89,6 +89,8 @@ e2e/                   flow(전체 흐름·스크린샷) · a11y(axe, WCAG 2.1 A
                        · fuzz_api(API 퍼징) · load(동시 사용자)
 docs/                  API.md · ERD_v2.md · SCREENS.md · openapi.json · schema_*.sql · demo/
 data_raw/              원천 CSV
+Dockerfile             배포 이미지(프론트 빌드 + 백엔드 + 미리 만든 DB) (§8)
+render.yaml            Render Blueprint(무료 플랜 웹 서비스) (§8)
 ```
 
 ## 4. 테스트
@@ -152,3 +154,18 @@ curl -X POST -H "X-Admin-Key: $MIRI_ADMIN_KEY" "http://localhost:8000/api/v1/adm
 | 정책 지원 | 실제 사업 7건 시드(금액·기간 미기재, 확인일 2026-09-20) | 기업마당 지원사업 API로 자동 갱신 |
 | 창업 비용 | 업종별 창업비 데이터 없음 → 예산은 초기투자비 검증과 운영자금 체크리스트에만 사용 | 프랜차이즈 정보공개서 등 창업비 데이터 연계 |
 | 저장 리포트 | 로그인 없이 **브라우저마다** 보관(다른 기기와 공유되지 않고, 브라우저 데이터를 지우면 목록도 사라짐 — 리포트 자체는 링크로 계속 열림). 저장소를 막은 브라우저(사생활 보호 모드 등)는 새로고침하면 목록이 사라져 화면에 안내한다. 체크리스트 완료 표시는 리포트마다 하나라 링크를 받은 사람이 체크하면 함께 바뀐다 | 여러 기기에서 이어 쓰려면 계정 또는 '저장 목록 옮기기 코드' 추가 |
+
+## 8. 배포 (Render 무료 플랜 · Docker)
+
+루트의 `Dockerfile`이 프론트를 빌드하고, 백엔드·`frontend/dist`·`data_raw/`에 **빌드 때 `init_data.py`로 만든 `miri.db`**까지 넣은 이미지를 만든다. `render.yaml`(Blueprint)은 이 이미지로 웹 서비스 하나(Docker · Free · Singapore, 헬스 체크 `/api/v1/health`)를 만든다.
+
+1. Render 대시보드 → **New → Blueprint** → 이 저장소 선택 → `render.yaml`을 읽어 `miri` 서비스가 잡힌다.
+2. 값을 묻는 `MIRI_ADMIN_KEY`·`KAKAO_REST_API_KEY`는 필요 없으면 비워 둔다. 관리자 키를 넣을 때는 §6 명령(`secrets.token_urlsafe(48)`)으로 만든 값을 쓴다 — 32자 미만이거나 공백·한글이 섞이면 서버가 뜨지 않아 배포가 실패한다. 비밀값은 저장소가 아니라 여기(나중에는 서비스의 Environment 화면)에만 넣는다.
+3. 배포가 끝나면 `https://<서비스 주소>.onrender.com/`에서 화면이 뜬다. 연결한 브랜치에 push할 때마다 다시 빌드·배포된다.
+
+로컬에서 같은 이미지 확인: `docker build -t miri . && docker run --rm -p 8000:8000 -e PORT=8000 miri` → `http://localhost:8000/`
+
+무료 플랜에서 알아둘 점(512MB · CPU 0.1):
+- 15분 동안 요청이 없으면 잠들고, 다음 첫 요청 때 깨어나는 데 1분 정도 걸린다.
+- 디스크는 재시작·재배포·잠들기마다 이미지 상태로 돌아간다. 그래서 DB를 이미지에 넣었고, **사용자가 만든 분석·리포트·저장 목록과 `/admin/refresh` 결과는 그때 사라진다**(시연용). 데이터(CSV)를 바꾸려면 `data_raw/`를 고쳐 push해 이미지를 다시 빌드한다(적재에 실패한 CSV가 있으면 빌드가 멈추고 이전 배포가 그대로 남는다). 계속 보관하려면 외부 PostgreSQL로 옮긴다(§6 `MIRI_DATABASE_URL` + `backend/requirements.txt`에 `psycopg[binary]` 추가 후 push + 로컬에서 그 DB로 `init_data.py` 한 번 실행).
+- 같은 제한(512MB · CPU 0.1)으로 컨테이너를 띄워 잰 값: 기동 약 20초, 메모리는 대기 약 155MB · 동시 30명 부하에서 최대 약 230MB(`/admin/refresh` 중에는 약 350~390MB, 75초 걸림). 동시 10명까지는 오류 없이 분석이 대개 8초(길면 15초) 걸리고, 동시 30명이 한꺼번에 분석하면 일부가 `database is locked`(500)로 실패하고 헬스 체크 응답도 가끔 5초를 넘었다.

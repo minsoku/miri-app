@@ -1,0 +1,27 @@
+# 이미지에 필요한 것은 backend/ · frontend/(소스) · data_raw/ 뿐. 생성물·로컬 환경·비밀값은 빌드 컨텍스트로 보내지 않는다
+.git
+**/node_modules
+**/dist
+**/dist-demo
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/*.tsbuildinfo
+**/.DS_Store
+
+# 비밀값(로컬 설정)
+**/.env
+**/.env.local
+**/.env.*.local
+backend/.dev_secret
+
+# e2e 스크립트·결과물(shots, shots_demo, resp, monkey …)과 문서·테스트는 실행에 쓰지 않음
+e2e/
+docs/
+backend/tests/
+frontend/.parity.mjs
+frontend/.parity_cases.json
