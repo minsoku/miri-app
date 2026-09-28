@@ -1,0 +1,6 @@
+node_modules/
+dist/
+dist-demo/
+.parity.mjs
+.parity_cases.json
+*.tsbuildinfo

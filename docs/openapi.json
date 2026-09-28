@@ -1,0 +1,3956 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "MIRI API",
+  "description": "데이터 기반 상권 분석·업종 추천 서비스 MIRI의 REST API. 로그인 없이 누구나 쓰고, 저장 리포트는 브라우저마다 따로 보관한다(X-Device-Key 헤더). 금액 단위는 원(KRW).",
+  "version": "0.2.0"
+ },
+ "paths": {
+  "/api/v1/health": {
+   "get": {
+    "tags": [
+     "메타"
+    ],
+    "summary": "헬스 체크",
+    "operationId": "health_api_v1_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/meta": {
+   "get": {
+    "tags": [
+     "메타"
+    ],
+    "summary": "데이터 기준 분기·모델 버전·등급 기준",
+    "operationId": "meta_api_v1_meta_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MetaOut"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/industries": {
+   "get": {
+    "tags": [
+     "메타",
+     "업종"
+    ],
+    "summary": "업종 목록 + 관심 업종 칩(SB-04)",
+    "operationId": "industries_api_v1_industries_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/places/search": {
+   "get": {
+    "tags": [
+     "상권 (SB-02)"
+    ],
+    "summary": "지역·상권 검색 (예: 강남역)",
+    "operationId": "search_places_api_v1_places_search_get",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 50,
+       "title": "Q"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 20,
+       "minimum": 1,
+       "default": 8,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/PlaceOut"
+         },
+         "title": "Response Search Places Api V1 Places Search Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/areas/candidates": {
+   "get": {
+    "tags": [
+     "상권 (SB-02)"
+    ],
+    "summary": "반경 내 후보 상권",
+    "operationId": "area_candidates_api_v1_areas_candidates_get",
+    "parameters": [
+     {
+      "name": "lat",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": 39,
+       "minimum": 33,
+       "title": "Lat"
+      }
+     },
+     {
+      "name": "lng",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "number",
+       "maximum": 132,
+       "minimum": 124,
+       "title": "Lng"
+      }
+     },
+     {
+      "name": "radius_m",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 5000,
+       "minimum": 100,
+       "default": 500,
+       "title": "Radius M"
+      }
+     },
+     {
+      "name": "place_name",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "maxLength": 100
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Place Name"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidatesOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/areas/map": {
+   "get": {
+    "tags": [
+     "상권 (SB-02)"
+    ],
+    "summary": "지도용 경계(GeoJSON, 단순화)",
+    "operationId": "area_map_api_v1_areas_map_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/areas/compare": {
+   "post": {
+    "tags": [
+     "상권 (SB-02)"
+    ],
+    "summary": "상권 비교 (UC-02) — SB-02 '후보 비교' 시트",
+    "operationId": "area_compare_api_v1_areas_compare_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CompareIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CompareOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/areas/{area_code}": {
+   "get": {
+    "tags": [
+     "상권 (SB-02)"
+    ],
+    "summary": "상권 기본 지표",
+    "operationId": "area_detail_api_v1_areas__area_code__get",
+    "parameters": [
+     {
+      "name": "area_code",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Area Code"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AreaCardOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analyses": {
+   "post": {
+    "tags": [
+     "분석 (SB-03~08)"
+    ],
+    "summary": "분석 실행 → 업종 TOP 5 (UC-01)",
+    "operationId": "create_analysis_api_v1_analyses_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AnalysisIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AnalysisOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analyses/{analysis_id}": {
+   "get": {
+    "tags": [
+     "분석 (SB-03~08)"
+    ],
+    "summary": "분석 결과 다시 보기",
+    "operationId": "get_analysis_api_v1_analyses__analysis_id__get",
+    "parameters": [
+     {
+      "name": "analysis_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Analysis Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AnalysisOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analyses/{analysis_id}/risk/{industry_code}": {
+   "get": {
+    "tags": [
+     "분석 (SB-03~08)"
+    ],
+    "summary": "폐업 위험도 상세 (UC-03)",
+    "operationId": "get_risk_api_v1_analyses__analysis_id__risk__industry_code__get",
+    "parameters": [
+     {
+      "name": "analysis_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Analysis Id"
+      }
+     },
+     {
+      "name": "industry_code",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Industry Code"
+      }
+     },
+     {
+      "name": "be",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer",
+         "maximum": 9223372036854775807,
+         "minimum": 1
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "리포트에서 열 때 그 리포트에 반영한 손익분기 id — 인근 지역이 비용을 감당하는지(alternatives[].affordable)를 그 비용으로 판단",
+       "title": "Be"
+      },
+      "description": "리포트에서 열 때 그 리포트에 반영한 손익분기 id — 인근 지역이 비용을 감당하는지(alternatives[].affordable)를 그 비용으로 판단"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RiskOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analyses/{analysis_id}/breakeven": {
+   "post": {
+    "tags": [
+     "분석 (SB-03~08)"
+    ],
+    "summary": "손익분기점 계산 (UC-04)",
+    "operationId": "post_breakeven_api_v1_analyses__analysis_id__breakeven_post",
+    "parameters": [
+     {
+      "name": "analysis_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Analysis Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/BreakEvenIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BreakEvenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analyses/{analysis_id}/breakeven/{break_even_id}": {
+   "get": {
+    "tags": [
+     "분석 (SB-03~08)"
+    ],
+    "summary": "저장된 손익분기 결과",
+    "operationId": "get_breakeven_api_v1_analyses__analysis_id__breakeven__break_even_id__get",
+    "parameters": [
+     {
+      "name": "analysis_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Analysis Id"
+      }
+     },
+     {
+      "name": "break_even_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "maximum": 9223372036854775807,
+       "minimum": 1,
+       "title": "Break Even Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BreakEvenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/analyses/{analysis_id}/reports": {
+   "post": {
+    "tags": [
+     "분석 (SB-03~08)"
+    ],
+    "summary": "액션 리포트 생성 (UC-05)",
+    "operationId": "post_report_api_v1_analyses__analysis_id__reports_post",
+    "parameters": [
+     {
+      "name": "analysis_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Analysis Id"
+      }
+     },
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(없으면 저장 여부를 알려 주지 않음)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(없으면 저장 여부를 알려 주지 않음)"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReportIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/reports/{report_id}": {
+   "get": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "액션 리포트 조회",
+    "operationId": "get_report_api_v1_reports__report_id__get",
+    "parameters": [
+     {
+      "name": "report_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Report Id"
+      }
+     },
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(없으면 저장 여부를 알려 주지 않음)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(없으면 저장 여부를 알려 주지 않음)"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReportOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/reports/{report_id}/items/{action_id}": {
+   "patch": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "체크리스트 항목 완료 표시",
+    "operationId": "set_item_done_api_v1_reports__report_id__items__action_id__patch",
+    "parameters": [
+     {
+      "name": "report_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 36,
+       "title": "Report Id"
+      }
+     },
+     {
+      "name": "action_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "maximum": 9223372036854775807,
+       "minimum": 1,
+       "title": "Action Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ActionDoneIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ActionDoneOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/reports": {
+   "post": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "리포트 저장 (UC-06, 이 브라우저의 목록에)",
+    "operationId": "save_report_api_v1_me_reports_post",
+    "parameters": [
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SaveIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "이 브라우저의 저장 리포트 (SB-09)",
+    "operationId": "my_reports_api_v1_me_reports_get",
+    "parameters": [
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SavedListOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/reports/clear": {
+   "post": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "이 브라우저의 저장 리포트 모두 삭제(여럿이 쓰는 컴퓨터 정리)",
+    "operationId": "clear_reports_api_v1_me_reports_clear_post",
+    "parameters": [
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/reports/{saved_report_id}": {
+   "delete": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "저장 리포트 삭제",
+    "operationId": "delete_report_api_v1_me_reports__saved_report_id__delete",
+    "parameters": [
+     {
+      "name": "saved_report_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "maximum": 9223372036854775807,
+       "minimum": 1,
+       "title": "Saved Report Id"
+      }
+     },
+     {
+      "name": "report_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 36
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 저장 항목의 리포트 id(주면 일치할 때만 삭제)",
+       "title": "Report Id"
+      },
+      "description": "이 저장 항목의 리포트 id(주면 일치할 때만 삭제)"
+     },
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "리포트 (SB-08·09)"
+    ],
+    "summary": "저장 리포트 메모 수정(없으면 404 — 다시 저장하지 않음)",
+    "operationId": "update_memo_api_v1_me_reports__saved_report_id__patch",
+    "parameters": [
+     {
+      "name": "saved_report_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "maximum": 9223372036854775807,
+       "minimum": 1,
+       "title": "Saved Report Id"
+      }
+     },
+     {
+      "name": "X-Device-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)",
+       "title": "X-Device-Key"
+      },
+      "description": "이 브라우저의 저장 키(영문·숫자·-·_ 32~128자)"
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MemoIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/refresh": {
+   "post": {
+    "tags": [
+     "관리자 (UC-07)"
+    ],
+    "summary": "원천 재적재 + 특징·모델 배치 + 엔진 재로딩",
+    "operationId": "refresh_api_v1_admin_refresh_post",
+    "parameters": [
+     {
+      "name": "skip_ingest",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Skip Ingest"
+      }
+     },
+     {
+      "name": "X-Admin-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "서버에 지정한 MIRI_ADMIN_KEY",
+       "title": "X-Admin-Key"
+      },
+      "description": "서버에 지정한 MIRI_ADMIN_KEY"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/admin/ingestion-logs": {
+   "get": {
+    "tags": [
+     "관리자 (UC-07)"
+    ],
+    "summary": "수집 로그",
+    "operationId": "ingestion_logs_api_v1_admin_ingestion_logs_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 500,
+       "minimum": 1,
+       "default": 50,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "X-Admin-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "서버에 지정한 MIRI_ADMIN_KEY",
+       "title": "X-Admin-Key"
+      },
+      "description": "서버에 지정한 MIRI_ADMIN_KEY"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "ActionDoneIn": {
+    "properties": {
+     "done": {
+      "type": "boolean",
+      "title": "Done",
+      "description": "체크리스트 항목 완료 여부"
+     }
+    },
+    "type": "object",
+    "required": [
+     "done"
+    ],
+    "title": "ActionDoneIn"
+   },
+   "ActionDoneOut": {
+    "properties": {
+     "action_id": {
+      "type": "integer",
+      "title": "Action Id"
+     },
+     "done": {
+      "type": "boolean",
+      "title": "Done"
+     }
+    },
+    "type": "object",
+    "required": [
+     "action_id",
+     "done"
+    ],
+    "title": "ActionDoneOut"
+   },
+   "ActionOut": {
+    "properties": {
+     "action_id": {
+      "type": "integer",
+      "title": "Action Id"
+     },
+     "action_type": {
+      "type": "string",
+      "title": "Action Type"
+     },
+     "content": {
+      "type": "string",
+      "title": "Content"
+     },
+     "priority": {
+      "type": "integer",
+      "title": "Priority"
+     },
+     "done": {
+      "type": "boolean",
+      "title": "Done",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "action_id",
+     "action_type",
+     "content",
+     "priority"
+    ],
+    "title": "ActionOut"
+   },
+   "AlternativeOut": {
+    "properties": {
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "location_risk_pct": {
+      "type": "integer",
+      "title": "Location Risk Pct"
+     },
+     "location_grade": {
+      "type": "string",
+      "title": "Location Grade"
+     },
+     "risk_score": {
+      "type": "integer",
+      "title": "Risk Score"
+     },
+     "pred_annual_rate": {
+      "type": "number",
+      "title": "Pred Annual Rate"
+     },
+     "distance_km": {
+      "type": "number",
+      "title": "Distance Km"
+     },
+     "sales_ps_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Ps M",
+      "description": "그 지역 같은 업종 점포당 월매출(카드 매출 추정)"
+     },
+     "affordable": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Affordable",
+      "description": "그 평균 매출로 지금 비용(분석 조건 또는 리포트에 반영한 손익분기)을 감당하는지(원가율 반영). 평균 매출이 대형 점포 때문에 부풀었을 수 있으면 null"
+     },
+     "sales_outlier": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Outlier",
+      "description": "점포당 매출 ÷ 서울 같은 업종 중간값(3배 이상일 때만)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area_code",
+     "area_name",
+     "location_risk_pct",
+     "location_grade",
+     "risk_score",
+     "pred_annual_rate",
+     "distance_km"
+    ],
+    "title": "AlternativeOut"
+   },
+   "AnalysisAreaOut": {
+    "properties": {
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "level": {
+      "type": "string",
+      "title": "Level"
+     },
+     "place_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Place Name"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M"
+     },
+     "lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lat"
+     },
+     "lng": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lng"
+     },
+     "scope_note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scope Note",
+      "description": "분석 단위 안내(자치구 전체 합계로 분석할 때). 결과 화면 맨 위에 표시"
+     },
+     "candidate_area_codes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Candidate Area Codes",
+      "description": "SB-02에서 후보로 보였던 다른 구(분석한 구 제외) — 다시 분석할 때 그대로 보낸다",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "area_code",
+     "area_name",
+     "level"
+    ],
+    "title": "AnalysisAreaOut"
+   },
+   "AnalysisIn": {
+    "properties": {
+     "area_code": {
+      "type": "string",
+      "maxLength": 20,
+      "minLength": 1,
+      "title": "Area Code",
+      "description": "분석 대상 지역 코드(후보 카드에서 선택)"
+     },
+     "place_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Place Name"
+     },
+     "lat": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 39.0,
+        "minimum": 33.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lat"
+     },
+     "lng": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 132.0,
+        "minimum": 124.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lng"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 5000.0,
+        "minimum": 100.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M"
+     },
+     "candidate_area_codes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 10,
+      "title": "Candidate Area Codes"
+     },
+     "user_type": {
+      "type": "string",
+      "enum": [
+       "PRE_FOUNDER",
+       "OWNER",
+       "CONSULTANT"
+      ],
+      "title": "User Type",
+      "default": "PRE_FOUNDER"
+     },
+     "budget": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Budget",
+      "description": "총 창업 예산(원)"
+     },
+     "monthly_rent_limit": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Monthly Rent Limit",
+      "description": "월 임대료(원). 구하려는 점포 월세 — 아직 정하지 않았으면 감당할 수 있는 최대치"
+     },
+     "labor_cost": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Labor Cost",
+      "description": "예상 인건비(월, 원)"
+     },
+     "initial_investment": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Initial Investment",
+      "description": "인테리어·설비 등 초기 투자비(보증금 제외)",
+      "default": 0
+     },
+     "other_fixed": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Other Fixed",
+      "description": "관리비·공과금 등 기타 월 고정비",
+      "default": 0
+     },
+     "loan_amount": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Loan Amount",
+      "default": 0
+     },
+     "loan_rate_annual": {
+      "type": "number",
+      "maximum": 0.3,
+      "minimum": 0.0,
+      "title": "Loan Rate Annual",
+      "description": "대출 연이율(0.05 = 5%)",
+      "default": 0.0
+     },
+     "owner_salary": {
+      "type": "integer",
+      "maximum": 100000000000.0,
+      "minimum": 0.0,
+      "title": "Owner Salary",
+      "description": "목표 월수입(대표자, 선택). 넣으면 손익분기에 포함",
+      "default": 0
+     },
+     "business_goal": {
+      "type": "string",
+      "enum": [
+       "기본",
+       "안정형",
+       "고수익형",
+       "저비용형"
+      ],
+      "title": "Business Goal",
+      "default": "기본"
+     },
+     "licenses": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "title": "Licenses",
+      "description": "보유 자격(업종 목록의 license 값만)"
+     },
+     "categories": {
+      "items": {
+       "type": "string",
+       "enum": [
+        "외식업",
+        "서비스업",
+        "소매업"
+       ]
+      },
+      "type": "array",
+      "maxItems": 3,
+      "title": "Categories"
+     },
+     "excluded_industries": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 100,
+      "title": "Excluded Industries"
+     },
+     "interests": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "title": "Interests",
+      "description": "관심 업종 코드(SB-04)"
+     },
+     "cogs_rates": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "propertyNames": {
+       "enum": [
+        "외식업",
+        "서비스업",
+        "소매업"
+       ]
+      },
+      "type": "object",
+      "title": "Cogs Rates",
+      "description": "분야별 원가율(선택, 0~0.95). 넣은 분야는 비용 적합도(F)·손익분기 기본값에 쓰인다. 외식업은 비우면 평균 40.7%, 서비스업·소매업은 비우면 비용 적합도를 계산하지 않는다"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area_code",
+     "budget",
+     "monthly_rent_limit",
+     "labor_cost"
+    ],
+    "title": "AnalysisIn"
+   },
+   "AnalysisOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "area": {
+      "$ref": "#/components/schemas/AnalysisAreaOut"
+     },
+     "conditions": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Conditions"
+     },
+     "data_quarter": {
+      "type": "integer",
+      "title": "Data Quarter"
+     },
+     "data_quarter_label": {
+      "type": "string",
+      "title": "Data Quarter Label"
+     },
+     "model_version": {
+      "type": "string",
+      "title": "Model Version"
+     },
+     "business_goal": {
+      "type": "string",
+      "title": "Business Goal"
+     },
+     "weights": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Weights"
+     },
+     "f_applied": {
+      "type": "boolean",
+      "title": "F Applied"
+     },
+     "f_note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "F Note"
+     },
+     "n_candidates": {
+      "type": "integer",
+      "title": "N Candidates"
+     },
+     "n_low_score": {
+      "type": "integer",
+      "title": "N Low Score",
+      "description": "조건은 통과했지만 적합도가 20점 미만이라 TOP에 넣지 않은 업종 수",
+      "default": 0
+     },
+     "empty_reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Empty Reason",
+      "description": "추천 TOP이 0개일 때 가장 큰 원인(예: 월 고정비가 모든 업종의 평균 매출보다 큼)"
+     },
+     "top": {
+      "items": {
+       "$ref": "#/components/schemas/ItemOut"
+      },
+      "type": "array",
+      "title": "Top"
+     },
+     "interests": {
+      "items": {
+       "$ref": "#/components/schemas/ItemOut"
+      },
+      "type": "array",
+      "title": "Interests"
+     },
+     "cautions": {
+      "items": {
+       "$ref": "#/components/schemas/ItemOut"
+      },
+      "type": "array",
+      "title": "Cautions"
+     },
+     "missing_interests": {
+      "items": {
+       "$ref": "#/components/schemas/MissingInterestOut"
+      },
+      "type": "array",
+      "title": "Missing Interests",
+      "description": "이 지역에 점포가 없어 점수를 못 낸 관심 업종"
+     },
+     "notices": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Notices"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "created_at",
+     "area",
+     "conditions",
+     "data_quarter",
+     "data_quarter_label",
+     "model_version",
+     "business_goal",
+     "weights",
+     "f_applied",
+     "n_candidates",
+     "top",
+     "interests",
+     "cautions",
+     "notices"
+    ],
+    "title": "AnalysisOut"
+   },
+   "AreaCardOut": {
+    "properties": {
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "level": {
+      "type": "string",
+      "title": "Level"
+     },
+     "is_center": {
+      "type": "boolean",
+      "title": "Is Center",
+      "default": false
+     },
+     "distance_m": {
+      "type": "integer",
+      "title": "Distance M",
+      "default": 0
+     },
+     "lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lat"
+     },
+     "lng": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lng"
+     },
+     "metrics": {
+      "$ref": "#/components/schemas/AreaMetricsOut"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area_code",
+     "area_name",
+     "level",
+     "metrics"
+    ],
+    "title": "AreaCardOut"
+   },
+   "AreaMetricsOut": {
+    "properties": {
+     "floating_daily": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Floating Daily",
+      "description": "일평균 유동인구(분기 합계 ÷ 분기 일수)"
+     },
+     "resident_population": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resident Population"
+     },
+     "working_population": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Working Population"
+     },
+     "store_count": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Store Count",
+      "description": "서비스 업종 전체 점포 수(프랜차이즈 포함)"
+     },
+     "rent_per_3_3m2": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rent Per 3 3M2",
+      "description": "3.3㎡당 월 환산임대료(원)"
+     },
+     "rent_level": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rent Level"
+     },
+     "change_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Change Name",
+      "description": "상권변화지표(다이나믹·상권확장·정체·상권축소)"
+     },
+     "avg_open_months": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Open Months"
+     },
+     "avg_closed_months": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Closed Months"
+     },
+     "quarter_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Quarter Label"
+     }
+    },
+    "type": "object",
+    "title": "AreaMetricsOut"
+   },
+   "BreakEvenIn": {
+    "properties": {
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "monthly_rent": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100000000000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Monthly Rent",
+      "description": "미입력 시 분석 조건의 월 임대료"
+     },
+     "labor_cost": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100000000000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Labor Cost"
+     },
+     "other_fixed": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100000000000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Other Fixed"
+     },
+     "initial_investment": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100000000000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Initial Investment"
+     },
+     "loan_amount": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100000000000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Loan Amount"
+     },
+     "loan_rate_annual": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 0.3,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Loan Rate Annual"
+     },
+     "owner_salary": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100000000000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Owner Salary"
+     },
+     "cogs_rate": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMaximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cogs Rate",
+      "description": "원가율. 비우면 분석 조건의 분야별 원가율(cogs_rates) → 업종 대분류 평균(외식업만). 둘 다 없으면 COGS_REQUIRED"
+     },
+     "other_variable_rate": {
+      "anyOf": [
+       {
+        "type": "number",
+        "exclusiveMaximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Other Variable Rate",
+      "description": "배달·플랫폼 수수료 등"
+     },
+     "avg_ticket": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 10000000.0,
+        "minimum": 100.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Ticket",
+      "description": "미입력 시 이 지역 동일 업종 실제 객단가, 그것도 없으면 서울 같은 업종 평균 객단가(100원 이상)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "industry_code"
+    ],
+    "title": "BreakEvenIn"
+   },
+   "BreakEvenOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "analysis_id": {
+      "type": "string",
+      "title": "Analysis Id"
+     },
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "type": "string",
+      "title": "Industry Name"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "inputs": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Inputs"
+     },
+     "monthly_fixed_cost": {
+      "type": "integer",
+      "title": "Monthly Fixed Cost"
+     },
+     "fixed_breakdown": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Fixed Breakdown"
+     },
+     "variable_cost_rate": {
+      "type": "number",
+      "title": "Variable Cost Rate"
+     },
+     "variable_breakdown": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Variable Breakdown"
+     },
+     "contribution_margin_rate": {
+      "type": "number",
+      "title": "Contribution Margin Rate"
+     },
+     "required_monthly_sales": {
+      "type": "integer",
+      "title": "Required Monthly Sales"
+     },
+     "required_daily_sales": {
+      "type": "integer",
+      "title": "Required Daily Sales"
+     },
+     "required_daily_customers": {
+      "type": "integer",
+      "title": "Required Daily Customers"
+     },
+     "avg_ticket_used": {
+      "type": "integer",
+      "title": "Avg Ticket Used"
+     },
+     "operating_days": {
+      "type": "integer",
+      "title": "Operating Days"
+     },
+     "market_sales_ps_m": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Market Sales Ps M"
+     },
+     "achievability_ratio": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Achievability Ratio"
+     },
+     "cost_pressure": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cost Pressure"
+     },
+     "profit_at_market_avg": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Profit At Market Avg"
+     },
+     "payback_months": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Payback Months"
+     },
+     "market_tx_ps_day": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Market Tx Ps Day"
+     },
+     "customers_vs_market": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Customers Vs Market"
+     },
+     "max_fixed_for_bep": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Max Fixed For Bep",
+      "description": "평균 매출로 손익분기를 맞추려면 허용되는 최대 월 고정비"
+     },
+     "composition": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Composition",
+      "description": "필요 매출의 구성: 고정비(목표 월수입 제외)·변동비·목표 월수입(대표자)"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     },
+     "sales_outlier": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Outlier",
+      "description": "이 지역 평균 매출 ÷ 서울 같은 업종 중간값(3배 이상일 때만 — 달성배율은 참고용)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "analysis_id",
+     "area_code",
+     "area_name",
+     "industry_code",
+     "industry_name",
+     "category",
+     "inputs",
+     "monthly_fixed_cost",
+     "fixed_breakdown",
+     "variable_cost_rate",
+     "variable_breakdown",
+     "contribution_margin_rate",
+     "required_monthly_sales",
+     "required_daily_sales",
+     "required_daily_customers",
+     "avg_ticket_used",
+     "operating_days",
+     "composition",
+     "warnings"
+    ],
+    "title": "BreakEvenOut"
+   },
+   "CandidatesOut": {
+    "properties": {
+     "lat": {
+      "type": "number",
+      "title": "Lat"
+     },
+     "lng": {
+      "type": "number",
+      "title": "Lng"
+     },
+     "radius_m": {
+      "type": "integer",
+      "title": "Radius M"
+     },
+     "place_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Place Name"
+     },
+     "analysis_level": {
+      "type": "string",
+      "title": "Analysis Level"
+     },
+     "notice": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notice"
+     },
+     "candidates": {
+      "items": {
+       "$ref": "#/components/schemas/AreaCardOut"
+      },
+      "type": "array",
+      "title": "Candidates"
+     }
+    },
+    "type": "object",
+    "required": [
+     "lat",
+     "lng",
+     "radius_m",
+     "analysis_level",
+     "candidates"
+    ],
+    "title": "CandidatesOut"
+   },
+   "CompareAreaOut": {
+    "properties": {
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "level": {
+      "type": "string",
+      "title": "Level"
+     },
+     "is_center": {
+      "type": "boolean",
+      "title": "Is Center",
+      "default": false
+     },
+     "distance_m": {
+      "type": "integer",
+      "title": "Distance M",
+      "default": 0
+     },
+     "lat": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lat"
+     },
+     "lng": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lng"
+     },
+     "metrics": {
+      "$ref": "#/components/schemas/AreaMetricsOut"
+     },
+     "summary": {
+      "$ref": "#/components/schemas/CompareSummaryOut"
+     },
+     "industry": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CompareIndustryOut"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "업종을 지정했을 때 그 업종 값(이 지역에 점포가 없으면 null)"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area_code",
+     "area_name",
+     "level",
+     "metrics",
+     "summary"
+    ],
+    "title": "CompareAreaOut"
+   },
+   "CompareIn": {
+    "properties": {
+     "area_codes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 4,
+      "minItems": 1,
+      "title": "Area Codes"
+     },
+     "industry_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Industry Code"
+     }
+    },
+    "type": "object",
+    "required": [
+     "area_codes"
+    ],
+    "title": "CompareIn"
+   },
+   "CompareIndustryOut": {
+    "properties": {
+     "risk_score": {
+      "type": "integer",
+      "title": "Risk Score"
+     },
+     "risk_grade": {
+      "type": "string",
+      "title": "Risk Grade"
+     },
+     "location_risk_pct": {
+      "type": "integer",
+      "title": "Location Risk Pct"
+     },
+     "pred_annual_rate": {
+      "type": "number",
+      "title": "Pred Annual Rate"
+     },
+     "sales_ps_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Ps M"
+     },
+     "sales_outlier": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Outlier",
+      "description": "점포당 매출 ÷ 서울 같은 업종 중간값(3배 이상일 때만 — 대형 점포 가능)"
+     },
+     "demand_D": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Demand D"
+     },
+     "stores_avg": {
+      "type": "number",
+      "title": "Stores Avg"
+     }
+    },
+    "type": "object",
+    "required": [
+     "risk_score",
+     "risk_grade",
+     "location_risk_pct",
+     "pred_annual_rate",
+     "stores_avg"
+    ],
+    "title": "CompareIndustryOut"
+   },
+   "CompareOut": {
+    "properties": {
+     "industry_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Industry Name"
+     },
+     "data_quarter": {
+      "type": "integer",
+      "title": "Data Quarter"
+     },
+     "areas": {
+      "items": {
+       "$ref": "#/components/schemas/CompareAreaOut"
+      },
+      "type": "array",
+      "title": "Areas"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data_quarter",
+     "areas"
+    ],
+    "title": "CompareOut"
+   },
+   "CompareSummaryOut": {
+    "properties": {
+     "avg_risk_score": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Risk Score",
+      "description": "이 지역 전 업종 폐업 위험 점수 평균(0~100)"
+     },
+     "high_risk_share": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "High Risk Share",
+      "description": "위험 '높음·고위험' 업종 비율(0~1)"
+     }
+    },
+    "type": "object",
+    "title": "CompareSummaryOut"
+   },
+   "FactorOut": {
+    "properties": {
+     "factor_code": {
+      "type": "string",
+      "title": "Factor Code"
+     },
+     "factor_name": {
+      "type": "string",
+      "title": "Factor Name"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "effect_pct": {
+      "type": "number",
+      "title": "Effect Pct",
+      "description": "이 요인 때문에 예상 폐업률이 몇 % 달라졌는지"
+     },
+     "effect_display": {
+      "type": "integer",
+      "title": "Effect Display"
+     },
+     "direction": {
+      "type": "string",
+      "enum": [
+       "up",
+       "down"
+      ],
+      "title": "Direction"
+     },
+     "explanation": {
+      "type": "string",
+      "title": "Explanation"
+     },
+     "detail": {
+      "type": "string",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "required": [
+     "factor_code",
+     "factor_name",
+     "label",
+     "effect_pct",
+     "effect_display",
+     "direction",
+     "explanation",
+     "detail"
+    ],
+    "title": "FactorOut"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "ItemOut": {
+    "properties": {
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "type": "string",
+      "title": "Industry Name"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "display_group": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Display Group"
+     },
+     "item_type": {
+      "type": "string",
+      "enum": [
+       "TOP",
+       "INTEREST",
+       "CAUTION"
+      ],
+      "title": "Item Type"
+     },
+     "rank": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rank"
+     },
+     "suitability": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Suitability",
+      "description": "적합도(0~100). 매출 데이터가 없어 일부 점수로만 낼 수 있으면 null"
+     },
+     "score_note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Score Note",
+      "description": "적합도가 없거나 다른 업종과 같은 잣대가 아닐 때 이유"
+     },
+     "scores": {
+      "$ref": "#/components/schemas/ScoresOut"
+     },
+     "risk_score": {
+      "type": "integer",
+      "title": "Risk Score"
+     },
+     "risk_grade": {
+      "type": "string",
+      "title": "Risk Grade"
+     },
+     "location_risk_pct": {
+      "type": "integer",
+      "title": "Location Risk Pct"
+     },
+     "location_grade": {
+      "type": "string",
+      "title": "Location Grade"
+     },
+     "pred_annual_rate": {
+      "type": "number",
+      "title": "Pred Annual Rate"
+     },
+     "sales_ps_m": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Ps M"
+     },
+     "avg_ticket": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Ticket"
+     },
+     "stores_avg": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Stores Avg"
+     },
+     "confidence": {
+      "type": "string",
+      "title": "Confidence"
+     },
+     "achievability_ratio": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Achievability Ratio"
+     },
+     "eligible": {
+      "type": "boolean",
+      "title": "Eligible"
+     },
+     "ineligible_reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ineligible Reason"
+     },
+     "reason": {
+      "type": "string",
+      "title": "Reason"
+     },
+     "reason_short": {
+      "type": "string",
+      "title": "Reason Short"
+     },
+     "chips": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Chips"
+     },
+     "caution": {
+      "type": "string",
+      "title": "Caution"
+     },
+     "cautions": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Cautions"
+     },
+     "peak": {
+      "items": {
+       "$ref": "#/components/schemas/PeakFlagOut"
+      },
+      "type": "array",
+      "title": "Peak",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "industry_code",
+     "industry_name",
+     "category",
+     "item_type",
+     "scores",
+     "risk_score",
+     "risk_grade",
+     "location_risk_pct",
+     "location_grade",
+     "pred_annual_rate",
+     "confidence",
+     "eligible",
+     "reason",
+     "reason_short",
+     "chips",
+     "caution",
+     "cautions"
+    ],
+    "title": "ItemOut"
+   },
+   "MemoIn": {
+    "properties": {
+     "memo": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Memo"
+     },
+     "report_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 36,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Report Id",
+      "description": "이 저장 항목의 리포트 id(주면 일치하는지 확인)"
+     }
+    },
+    "type": "object",
+    "title": "MemoIn"
+   },
+   "MetaOut": {
+    "properties": {
+     "data_quarter": {
+      "type": "integer",
+      "title": "Data Quarter"
+     },
+     "data_quarter_label": {
+      "type": "string",
+      "title": "Data Quarter Label"
+     },
+     "model_version": {
+      "type": "string",
+      "title": "Model Version"
+     },
+     "trained_at": {
+      "type": "string",
+      "title": "Trained At"
+     },
+     "analysis_level": {
+      "type": "string",
+      "enum": [
+       "district",
+       "trade_area"
+      ],
+      "title": "Analysis Level"
+     },
+     "grade_cuts": {
+      "items": {
+       "type": "number"
+      },
+      "type": "array",
+      "title": "Grade Cuts"
+     },
+     "grade_rate_bounds": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Grade Rate Bounds",
+      "description": "등급 경계의 예상 연간 폐업률"
+     },
+     "goals": {
+      "additionalProperties": {
+       "additionalProperties": {
+        "type": "number"
+       },
+       "type": "object"
+      },
+      "type": "object",
+      "title": "Goals"
+     },
+     "notices": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Notices"
+     }
+    },
+    "type": "object",
+    "required": [
+     "data_quarter",
+     "data_quarter_label",
+     "model_version",
+     "trained_at",
+     "analysis_level",
+     "grade_cuts",
+     "grade_rate_bounds",
+     "goals",
+     "notices"
+    ],
+    "title": "MetaOut"
+   },
+   "MissingInterestOut": {
+    "properties": {
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "type": "string",
+      "title": "Industry Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "industry_code",
+     "industry_name"
+    ],
+    "title": "MissingInterestOut"
+   },
+   "PeakFlagOut": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "title": "Code"
+     },
+     "pill": {
+      "type": "string",
+      "title": "Pill"
+     },
+     "share": {
+      "type": "number",
+      "title": "Share"
+     },
+     "action": {
+      "type": "string",
+      "title": "Action"
+     }
+    },
+    "type": "object",
+    "required": [
+     "code",
+     "pill",
+     "share",
+     "action"
+    ],
+    "title": "PeakFlagOut"
+   },
+   "PlaceOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "lat": {
+      "type": "number",
+      "title": "Lat"
+     },
+     "lng": {
+      "type": "number",
+      "title": "Lng"
+     },
+     "area_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area Code"
+     },
+     "area_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Area Name"
+     },
+     "address": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Address"
+     },
+     "source": {
+      "type": "string",
+      "enum": [
+       "local",
+       "kakao"
+      ],
+      "title": "Source",
+      "default": "local"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "kind",
+     "lat",
+     "lng"
+    ],
+    "title": "PlaceOut"
+   },
+   "PolicyOut": {
+    "properties": {
+     "policy_id": {
+      "type": "integer",
+      "title": "Policy Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "provider": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Provider"
+     },
+     "support_type": {
+      "type": "string",
+      "title": "Support Type"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "apply_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Apply Url"
+     },
+     "target_user": {
+      "type": "string",
+      "title": "Target User"
+     },
+     "target_region": {
+      "type": "string",
+      "title": "Target Region"
+     },
+     "checked_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Checked At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "policy_id",
+     "name",
+     "support_type",
+     "target_user",
+     "target_region"
+    ],
+    "title": "PolicyOut"
+   },
+   "ReferenceOut": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "display": {
+      "type": "string",
+      "title": "Display"
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "label",
+     "display"
+    ],
+    "title": "ReferenceOut"
+   },
+   "ReportIn": {
+    "properties": {
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "break_even_id": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 9.223372036854776e+18,
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Break Even Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "industry_code"
+    ],
+    "title": "ReportIn"
+   },
+   "ReportOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "analysis_id": {
+      "type": "string",
+      "title": "Analysis Id"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "place_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Place Name"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M"
+     },
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "type": "string",
+      "title": "Industry Name"
+     },
+     "one_line_summary": {
+      "type": "string",
+      "title": "One Line Summary"
+     },
+     "checklist": {
+      "items": {
+       "$ref": "#/components/schemas/ActionOut"
+      },
+      "type": "array",
+      "title": "Checklist"
+     },
+     "policies": {
+      "items": {
+       "$ref": "#/components/schemas/PolicyOut"
+      },
+      "type": "array",
+      "title": "Policies"
+     },
+     "risk": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Risk"
+     },
+     "breakeven": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Breakeven"
+     },
+     "recommendation": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recommendation"
+     },
+     "saved_report_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Saved Report Id"
+     },
+     "data_quarter_label": {
+      "type": "string",
+      "title": "Data Quarter Label"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "analysis_id",
+     "created_at",
+     "area_code",
+     "area_name",
+     "industry_code",
+     "industry_name",
+     "one_line_summary",
+     "checklist",
+     "policies",
+     "risk",
+     "data_quarter_label"
+    ],
+    "title": "ReportOut"
+   },
+   "RiskOut": {
+    "properties": {
+     "analysis_id": {
+      "type": "string",
+      "title": "Analysis Id"
+     },
+     "area_code": {
+      "type": "string",
+      "title": "Area Code"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "type": "string",
+      "title": "Industry Name"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "data_quarter": {
+      "type": "integer",
+      "title": "Data Quarter"
+     },
+     "data_quarter_label": {
+      "type": "string",
+      "title": "Data Quarter Label"
+     },
+     "model_version": {
+      "type": "string",
+      "title": "Model Version"
+     },
+     "risk_score": {
+      "type": "integer",
+      "title": "Risk Score"
+     },
+     "risk_grade": {
+      "type": "string",
+      "title": "Risk Grade"
+     },
+     "pred_annual_rate": {
+      "type": "number",
+      "title": "Pred Annual Rate"
+     },
+     "industry_avg_annual_rate": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Industry Avg Annual Rate"
+     },
+     "seoul_avg_annual_rate": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seoul Avg Annual Rate"
+     },
+     "location_risk_pct": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location Risk Pct",
+      "description": "같은 업종 안에서의 입지 위험(0~100). 이 지역에 같은 업종이 없으면 null"
+     },
+     "location_grade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location Grade"
+     },
+     "confidence": {
+      "type": "string",
+      "title": "Confidence"
+     },
+     "local_data_weight": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Local Data Weight"
+     },
+     "grade_cuts": {
+      "items": {
+       "type": "number"
+      },
+      "type": "array",
+      "title": "Grade Cuts"
+     },
+     "grade_rate_bounds": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Grade Rate Bounds"
+     },
+     "summary": {
+      "type": "string",
+      "title": "Summary"
+     },
+     "factors": {
+      "items": {
+       "$ref": "#/components/schemas/FactorOut"
+      },
+      "type": "array",
+      "title": "Factors"
+     },
+     "reference": {
+      "items": {
+       "$ref": "#/components/schemas/ReferenceOut"
+      },
+      "type": "array",
+      "title": "Reference"
+     },
+     "raw": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Raw"
+     },
+     "alternatives": {
+      "items": {
+       "$ref": "#/components/schemas/AlternativeOut"
+      },
+      "type": "array",
+      "title": "Alternatives"
+     },
+     "affordability_basis": {
+      "type": "string",
+      "title": "Affordability Basis",
+      "description": "alternatives[].affordable의 비용 기준: analysis(분석 조건) | report(리포트에 반영한 손익분기)",
+      "default": "analysis"
+     },
+     "affordability_cogs_known": {
+      "type": "boolean",
+      "title": "Affordability Cogs Known",
+      "description": "감당 판단에 원가율을 썼는지(모르면 평균 매출 ≥ 월 고정비만 봄)",
+      "default": true
+     },
+     "affordability_owner_included": {
+      "type": "boolean",
+      "title": "Affordability Owner Included",
+      "description": "감당 판단 비용에 목표 월수입이 들어 있는지",
+      "default": false
+     },
+     "recheck": {
+      "type": "boolean",
+      "title": "Recheck",
+      "description": "고위험 → 창업 재검토 안내 표시"
+     },
+     "fallback": {
+      "type": "boolean",
+      "title": "Fallback",
+      "description": "지역 데이터가 없어 업종 평균으로 대체",
+      "default": false
+     },
+     "notices": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Notices"
+     }
+    },
+    "type": "object",
+    "required": [
+     "analysis_id",
+     "area_code",
+     "area_name",
+     "industry_code",
+     "industry_name",
+     "category",
+     "data_quarter",
+     "data_quarter_label",
+     "model_version",
+     "risk_score",
+     "risk_grade",
+     "pred_annual_rate",
+     "confidence",
+     "grade_cuts",
+     "grade_rate_bounds",
+     "summary",
+     "factors",
+     "reference",
+     "raw",
+     "alternatives",
+     "recheck",
+     "notices"
+    ],
+    "title": "RiskOut"
+   },
+   "SaveIn": {
+    "properties": {
+     "report_id": {
+      "type": "string",
+      "maxLength": 36,
+      "minLength": 1,
+      "title": "Report Id"
+     },
+     "memo": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Memo"
+     }
+    },
+    "type": "object",
+    "required": [
+     "report_id"
+    ],
+    "title": "SaveIn"
+   },
+   "SavedItemOut": {
+    "properties": {
+     "saved_report_id": {
+      "type": "integer",
+      "title": "Saved Report Id"
+     },
+     "report_id": {
+      "type": "string",
+      "title": "Report Id"
+     },
+     "analysis_id": {
+      "type": "string",
+      "title": "Analysis Id"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "area_name": {
+      "type": "string",
+      "title": "Area Name"
+     },
+     "place_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Place Name"
+     },
+     "industry_code": {
+      "type": "string",
+      "title": "Industry Code"
+     },
+     "industry_name": {
+      "type": "string",
+      "title": "Industry Name"
+     },
+     "suitability": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Suitability"
+     },
+     "risk_score": {
+      "type": "integer",
+      "title": "Risk Score"
+     },
+     "risk_grade": {
+      "type": "string",
+      "title": "Risk Grade"
+     },
+     "memo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Memo"
+     },
+     "required_monthly_sales": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Required Monthly Sales",
+      "description": "리포트에 반영한 손익분기 필요 월매출"
+     },
+     "monthly_fixed_cost": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Monthly Fixed Cost",
+      "description": "월 고정비(반영한 손익분기, 없으면 분석 조건 — 목표 월수입 포함)"
+     },
+     "achievability_ratio": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Achievability Ratio"
+     },
+     "owner_included": {
+      "type": "boolean",
+      "title": "Owner Included",
+      "description": "필요 월매출에 목표 월수입이 들어 있는지",
+      "default": false
+     },
+     "edited": {
+      "type": "boolean",
+      "title": "Edited",
+      "description": "반영한 손익분기에 분석 조건과 다르게 바꾼 값이 있는지",
+      "default": false
+     },
+     "business_goal": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Business Goal",
+      "description": "이 분석의 창업 목표(같은 업종 카드끼리 적합도가 다른 이유)"
+     },
+     "item_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Item Type",
+      "description": "분석 결과에서 이 업종의 자리: TOP · INTEREST · CAUTION"
+     },
+     "rank": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rank"
+     },
+     "eligible": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Eligible",
+      "description": "추천 조건을 통과했는지(관심 업종이면 추천 제외일 수 있음)"
+     },
+     "caution": {
+      "type": "boolean",
+      "title": "Caution",
+      "description": "주의 업종(같은 업종 중 입지 위험 상위 10%)인지",
+      "default": false
+     },
+     "sales_outlier": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sales Outlier",
+      "description": "평균 매출 ÷ 서울 같은 업종 중간값(3배 이상일 때만 — 달성배율은 참고용)"
+     },
+     "checklist_total": {
+      "type": "integer",
+      "title": "Checklist Total",
+      "default": 0
+     },
+     "checklist_done": {
+      "type": "integer",
+      "title": "Checklist Done",
+      "default": 0
+     }
+    },
+    "type": "object",
+    "required": [
+     "saved_report_id",
+     "report_id",
+     "analysis_id",
+     "created_at",
+     "area_name",
+     "industry_code",
+     "industry_name",
+     "risk_score",
+     "risk_grade"
+    ],
+    "title": "SavedItemOut"
+   },
+   "SavedListOut": {
+    "properties": {
+     "count": {
+      "type": "integer",
+      "title": "Count"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/SavedItemOut"
+      },
+      "type": "array",
+      "title": "Items"
+     }
+    },
+    "type": "object",
+    "required": [
+     "count",
+     "items"
+    ],
+    "title": "SavedListOut"
+   },
+   "ScoresOut": {
+    "properties": {
+     "D": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "D",
+      "description": "매출 잠재력(서울 동일 업종 중 백분위)"
+     },
+     "S": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "S",
+      "description": "생존 안정성 = 100 − 위험 점수"
+     },
+     "F": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "F",
+      "description": "내 비용 적합도(손익분기 달성배율 환산). 미적용 시 null"
+     }
+    },
+    "type": "object",
+    "title": "ScoresOut"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}

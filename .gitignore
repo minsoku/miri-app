@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+backend/miri.db
+backend/*.db
+.pytest_cache/
+e2e/shots/
+.DS_Store
+backend/.env
+backend/.dev_secret
+backend/*.db-wal
+backend/*.db-shm

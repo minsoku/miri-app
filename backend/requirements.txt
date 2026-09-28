@@ -1,0 +1,12 @@
+# MIRI 백엔드 (Python 3.10+)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+sqlalchemy>=2.0.25
+pydantic>=2.6
+httpx>=0.27
+# 분석 엔진(miri_engine)
+pandas>=2.1
+numpy>=1.26
+scipy>=1.11
+# 테스트
+pytest>=8
